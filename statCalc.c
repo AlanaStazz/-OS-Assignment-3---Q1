@@ -8,11 +8,15 @@
 #include <errno.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
+#include <limits.h>
 
 
 //Function Declarations
 void inputCheck(int n, char **input);
-
+int calc_min(void *input_ints);
+int calc_max(void *input_ints);
+int calc_avg(void *input_ints);
 
 
 int main(int argc, char *argv[]){
@@ -21,6 +25,9 @@ int main(int argc, char *argv[]){
 	int x, y;
 	int numOfInts = (argc - 1);
 	int argArr[numOfInts];
+	void *min;
+	void *max;
+	void *avg;
 
 	//Input sanitization
 	inputCheck(argc, argv);
@@ -29,13 +36,71 @@ int main(int argc, char *argv[]){
 	for(x = 1; x <=numOfInts; x++){
 		argArr[x - 1] = atoi(argv[x]);
 	}
-
-	//TODO: Create the threads, each calling a different function
 	
+
+	//Make threads & display any errors
+	pthread_t thr[3];
+
+
+	y = pthread_create(&thr[0], NULL, (void *)calc_min, (void *) argArr);
+
+	if (y != 0){
+
+		fprintf(stderr, "\n\nThread creation error: failed @ calc_min thread - error code %d", y);		
+	}
+
+
+	y = pthread_create(&thr[1], NULL, (void *)calc_max, (void *) argArr);
+
+	if (y != 0){
+
+		fprintf(stderr, "\n\nThread creation error: failed @ calc_max thread - error code %d", y);
+	}
+
+
+	y = pthread_create(&thr[2], NULL, (void *)calc_avg, (void *) argArr);
+
+	if (y != 0){
+
+		fprintf(stderr, "\n\nThread creation error: failed @ calc_avg thread - error code %d", y);
+
+	}
+
+
+	//Joins & collect function output from threads
+	y = pthread_join(thr[0], &min);
+
+	if (y != 0){
+
+		fprintf(stderr, "\n\nThread join error: failed @ calc_max thread - error code %d", y);
+
+	}
+	
+	y = pthread_join(thr[1], &max);
+
+	if (y != 0){
+
+		fprintf(stderr, "\n\nThread join error: failed @ calc_max thread - error code %d", y);
+
+	}
+
+	y = pthread_join(thr[2], &avg);
+
+	if (y != 0){
+
+		fprintf(stderr, "\n\nThread join error: failed @ calc_max thread - error code %d", y);
+
+	}
+
+
+	//Final output	
+	printf("\n\n* * * The calculation results are: * * * \n\nMinimum value: %d \nMaximum Value: %d \nAverage Value: %d\n\n", (uintptr_t)min, (uintptr_t)max, (uintptr_t)avg);
+
+	return(0);
 
 }
 
-//Input Validation
+//Input Validation & Sanitization
 void inputCheck(int n, char **input){
 
 	//If too few arguments, exit
@@ -57,7 +122,7 @@ void inputCheck(int n, char **input){
 
 			if(!isdigit(input[i][j])){
 
-				fprintf(stderr, "Format error: all input must be integers.\n\n");
+				fprintf(stderr, "Format error: all input must be integers. Exiting...\n\n");
 				exit(1);
 			}
 
@@ -66,7 +131,7 @@ void inputCheck(int n, char **input){
 			//Also make sure no overflow
 			if(j > 9){
 
-				fprintf(stderr, "Overflow error: Please only input ints less less than 10 digits.\n\n");
+				fprintf(stderr, "Overflow error: Please only input ints less less than 10 digits. Exiting...\n\n");
 				exit(1);
 			}
 		}
@@ -75,8 +140,64 @@ void inputCheck(int n, char **input){
 
 }
 
-//TODO: Thread creation function
+//Calculate the min
+int calc_min(void *input_ints){
 
-//TODO: Functions for min, max, avg
+	int i;
+	int min = INT_MAX;
+	int *ptr = (int *)input_ints;
 
+	//Iterate through input array for min. value
+	while(*ptr != '\0'){
+		
+		if(*ptr < min){
+		min = *ptr;
+	}
 
+		ptr++;
+	}
+
+	return min;
+
+}
+
+//Calculate the max
+int calc_max(void *input_ints){
+
+	int i;
+	int max = INT_MIN;
+	int *ptr = (int *)input_ints;
+
+	//Iterate through input array for max. value
+	while(*ptr != '\0'){
+		
+		if(*ptr > max){
+		max = *ptr;
+	}
+
+		ptr++;
+	}
+
+	return max;
+
+}
+
+//Calculate the avg
+int calc_avg(void *input_ints){
+
+	int i;
+	int sum = 0;
+	int n = 0;
+	int *ptr = (int *)input_ints;
+
+	//Iterate through input array for sum, then find avg
+	while(*ptr != '\0'){
+		
+		sum += *ptr;
+		n++;
+
+		ptr++;
+	}
+
+	return (sum/n);
+}
