@@ -8,10 +8,14 @@
 #include <errno.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
 
 
 //Function Declarations
 void inputCheck(int n, char **input);
+int calc_min(void *input_ints);
+int calc_max(void *input_ints);
+int calc_avg(void *input_ints);
 
 
 
@@ -21,6 +25,9 @@ int main(int argc, char *argv[]){
 	int x, y;
 	int numOfInts = (argc - 1);
 	int argArr[numOfInts];
+	void *min;
+	void *max;
+	void *avg;
 
 	//Input sanitization
 	inputCheck(argc, argv);
@@ -29,13 +36,69 @@ int main(int argc, char *argv[]){
 	for(x = 1; x <=numOfInts; x++){
 		argArr[x - 1] = atoi(argv[x]);
 	}
-
-	//TODO: Create the threads, each calling a different function
 	
+	//TODO ADDED
+	//Make threads
+	pthread_t thr[3];
+
+
+	y = pthread_create(&thr[0], NULL, (void *)calc_min, (void *) argArr);
+
+	if (y != 0){
+		printf("\n\nThread creation error: failed @ calc_min thread");		//TODO: handle errors better (for join + make)
+	}
+
+
+	y = pthread_create(&thr[1], NULL, (void *)calc_max, (void *) argArr);
+
+	if (y != 0){
+
+		printf("\n\nThread creation error: failed @ calc_max thread");
+	}
+
+
+	y = pthread_create(&thr[2], NULL, (void *)calc_avg, (void *) argArr);
+
+	if (y != 0){
+		printf("\n\nThread creation error: failed @ calc_avg thread");
+
+	}
+
+
+	//Joins
+	y = pthread_join(thr[0], &min);
+
+	if (y != 0){
+
+		printf("\n\nThread join error: failed @ calc_max thread - error code %d", y);
+
+	}
+	
+	y = pthread_join(thr[1], &max);
+
+	if (y != 0){
+
+		printf("\n\nThread join error: failed @ calc_max thread - error code %d", y);
+
+	}
+
+	y = pthread_join(thr[2], &avg);
+
+	if (y != 0){
+
+		printf("\n\nThread join error: failed @ calc_max thread - error code %d", y);
+
+	}
+
+	//TODO: Create the actual functions
+	
+	printf("\n\nTesting: end of main... %d %d %d", (uintptr_t)min, (uintptr_t)max, (uintptr_t)avg);
+
+	return(0);
 
 }
 
-//Input Validation
+//Input Validation & Sanitization
 void inputCheck(int n, char **input){
 
 	//If too few arguments, exit
@@ -75,8 +138,33 @@ void inputCheck(int n, char **input){
 
 }
 
-//TODO: Thread creation function
+
 
 //TODO: Functions for min, max, avg
+int calc_min(void *input_ints){
 
+/*	int i;
+	int min = INT_MAX;
+	int *ptr = (int *)input_ints;*/
 
+	printf("\n\nTesting: calc_min");
+
+	return 123;
+
+}
+
+int calc_max(void *input_ints){
+
+	printf("\n\nTesting: calc_max");
+
+	return 123;
+
+}
+
+int calc_avg(void *input_ints){
+
+	printf("\n\nTesting: calc_avg");
+
+	return 123;
+
+}
