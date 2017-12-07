@@ -38,7 +38,8 @@ int main(int argc, char *argv[]){
 	}
 	
 
-	//Make threads & display any errors
+	//Make threads & check for errors
+	//Quits because calculating on wrong block of memory could return wrong info dangerously
 	pthread_t thr[3];
 
 
@@ -46,7 +47,8 @@ int main(int argc, char *argv[]){
 
 	if (y != 0){
 
-		fprintf(stderr, "\n\nThread creation error: failed @ calc_min thread - error code %d", y);		
+		perror("\n\nFATAL THREAD CREATION ERROR: ");
+		exit(1);	
 	}
 
 
@@ -54,42 +56,47 @@ int main(int argc, char *argv[]){
 
 	if (y != 0){
 
-		fprintf(stderr, "\n\nThread creation error: failed @ calc_max thread - error code %d", y);
+		perror("\n\nFATAL THREAD CREATION ERROR: ");
+		exit(1);	
 	}
+
 
 
 	y = pthread_create(&thr[2], NULL, (void *)calc_avg, (void *) argArr);
 
 	if (y != 0){
 
-		fprintf(stderr, "\n\nThread creation error: failed @ calc_avg thread - error code %d", y);
-
+		perror("\n\nFATAL THREAD CREATION ERROR: ");
+		exit(1);	
 	}
 
 
+
 	//Joins & collect function output from threads
+	//Quits because main thread outputting values prematurely could lead to dangerous unauthorized memory access
 	y = pthread_join(thr[0], &min);
 
 	if (y != 0){
 
-		fprintf(stderr, "\n\nThread join error: failed @ calc_max thread - error code %d", y);
-
+		perror("\n\nFATAL THREAD JOIN ERROR: ");
+		exit(1);	
 	}
+
 	
 	y = pthread_join(thr[1], &max);
 
 	if (y != 0){
 
-		fprintf(stderr, "\n\nThread join error: failed @ calc_max thread - error code %d", y);
-
+		perror("\n\nFATAL THREAD JOIN ERROR: ");
+		exit(1);	
 	}
 
 	y = pthread_join(thr[2], &avg);
 
 	if (y != 0){
 
-		fprintf(stderr, "\n\nThread join error: failed @ calc_max thread - error code %d", y);
-
+		perror("\n\nFATAL THREAD JOIN ERROR: ");
+		exit(1);	
 	}
 
 
